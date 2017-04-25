@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>  <script type="application/shiny-singletons">12b282b6c4e1ec3cee386f4ca6165aafc4731a84</script>  <script type="application/html-dependencies">json2[2014.02.04];jquery[1.12.4];babel-polyfill[6.7.2];shiny[1.0.0];bootstrap[3.3.7]</script><script src="shared/json2-min.js"></script>
+    <script src="shared/jquery.min.js"></script>
+    <script src="shared/babel-polyfill.min.js"></script>
+    <link href="shared/shiny.css" rel="stylesheet" />
+    <script src="shared/shiny.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="shared/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="shared/bootstrap/js/bootstrap.min.js"></script>
+    <script src="shared/bootstrap/shim/html5shiv.min.js"></script>
+    <script src="shared/bootstrap/shim/respond.min.js"></script>
+    <style>.shinyjs-hide { display: none !important; }</style>
+    
+    <script>Shiny.addCustomMessageHandler('shinyjs-show', function(params) { shinyjs.debugMessage('shinyjs: calling function "show" with parameters:'); shinyjs.debugMessage(params); shinyjs.show(params);});
+    Shiny.addCustomMessageHandler('shinyjs-hide', function(params) { shinyjs.debugMessage('shinyjs: calling function "hide" with parameters:'); shinyjs.debugMessage(params); shinyjs.hide(params);});
+    Shiny.addCustomMessageHandler('shinyjs-toggle', function(params) { shinyjs.debugMessage('shinyjs: calling function "toggle" with parameters:'); shinyjs.debugMessage(params); shinyjs.toggle(params);});
+    Shiny.addCustomMessageHandler('shinyjs-enable', function(params) { shinyjs.debugMessage('shinyjs: calling function "enable" with parameters:'); shinyjs.debugMessage(params); shinyjs.enable(params);});
+    Shiny.addCustomMessageHandler('shinyjs-disable', function(params) { shinyjs.debugMessage('shinyjs: calling function "disable" with parameters:'); shinyjs.debugMessage(params); shinyjs.disable(params);});
+    Shiny.addCustomMessageHandler('shinyjs-toggleState', function(params) { shinyjs.debugMessage('shinyjs: calling function "toggleState" with parameters:'); shinyjs.debugMessage(params); shinyjs.toggleState(params);});
+    Shiny.addCustomMessageHandler('shinyjs-addClass', function(params) { shinyjs.debugMessage('shinyjs: calling function "addClass" with parameters:'); shinyjs.debugMessage(params); shinyjs.addClass(params);});
+    Shiny.addCustomMessageHandler('shinyjs-removeClass', function(params) { shinyjs.debugMessage('shinyjs: calling function "removeClass" with parameters:'); shinyjs.debugMessage(params); shinyjs.removeClass(params);});
+    Shiny.addCustomMessageHandler('shinyjs-toggleClass', function(params) { shinyjs.debugMessage('shinyjs: calling function "toggleClass" with parameters:'); shinyjs.debugMessage(params); shinyjs.toggleClass(params);});
+    Shiny.addCustomMessageHandler('shinyjs-html', function(params) { shinyjs.debugMessage('shinyjs: calling function "html" with parameters:'); shinyjs.debugMessage(params); shinyjs.html(params);});
+    Shiny.addCustomMessageHandler('shinyjs-onevent', function(params) { shinyjs.debugMessage('shinyjs: calling function "onevent" with parameters:'); shinyjs.debugMessage(params); shinyjs.onevent(params);});
+    Shiny.addCustomMessageHandler('shinyjs-alert', function(params) { shinyjs.debugMessage('shinyjs: calling function "alert" with parameters:'); shinyjs.debugMessage(params); shinyjs.alert(params);});
+    Shiny.addCustomMessageHandler('shinyjs-logjs', function(params) { shinyjs.debugMessage('shinyjs: calling function "logjs" with parameters:'); shinyjs.debugMessage(params); shinyjs.logjs(params);});
+    Shiny.addCustomMessageHandler('shinyjs-runjs', function(params) { shinyjs.debugMessage('shinyjs: calling function "runjs" with parameters:'); shinyjs.debugMessage(params); shinyjs.runjs(params);});
+    Shiny.addCustomMessageHandler('shinyjs-reset', function(params) { shinyjs.debugMessage('shinyjs: calling function "reset" with parameters:'); shinyjs.debugMessage(params); shinyjs.reset(params);});
+    Shiny.addCustomMessageHandler('shinyjs-delay', function(params) { shinyjs.debugMessage('shinyjs: calling function "delay" with parameters:'); shinyjs.debugMessage(params); shinyjs.delay(params);});</script>
+    <script src="shinyjs/shinyjs-default-funcs.js"></script>
+    <script>shinyjs.debug = false;</script>
+  </head>
+
+  <body>
+    <div class="container-fluid" style="background-color: #f6d7b0 ">
+      <div class="row">
+        <form >
+          <div class="col-sm-4">
+            <div class="form-group shiny-input-container">
+              <label>Choose a RDS File</label>
+              <div class="input-group">
+                <label class="input-group-btn">
+                  <span class="btn btn-default btn-file">
+                    Browse...
+                    <input id="file1" name="file1" type="file" style="display: none;"/>
+                  </span>
+                </label>
+                <input type="text" class="form-control" placeholder="No file selected" readonly="readonly"/>
+              </div>
+              <div id="file1_progress" class="progress progress-striped active shiny-file-input-progress">
+                <div class="progress-bar"></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="form-group shiny-input-container">
+              <label for="name">Dataset Name</label>
+              <input id="name" type="text" class="form-control" value=""/>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div style="margin-top: 25px">
+              <button id="uploadButton" type="button" class="btn btn-default action-button">upload</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

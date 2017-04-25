@@ -1,0 +1,10 @@
+name: uploadGUI
+title: uploadGUI
+account: frapbotbeta
+server: shinyapps.io
+appId: 175256
+bundleId: 803393
+url: https://frapbotbeta.shinyapps.io/uploadGUI/
+when: 1493139382.46831
+asMultiple: FALSE
+asStatic: FALSE
