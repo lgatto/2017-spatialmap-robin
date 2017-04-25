@@ -4,8 +4,8 @@ library(jsonlite)
 library(pRolocdata)
 
 #project settings
-dbURL <- "https://firedata-b0e54.firebaseio.com"
-path <- "/MSnBase/6"
+dbURL <- "https://spatialmap-1b08e.firebaseio.com"
+path <- "/objects"
 
 #taking pRolocData MSnSet
 data(E14TG2aS1)
@@ -33,7 +33,7 @@ b = a[nchar(a) > 2]
 
 #uploading all pRolocData MSnSets
 for (i in b) {
-path <- paste0("/pRolocData/", i)
+path <- paste0("/objects/", i)
 data(list = i)
 tempPath = tempfile()
 saveRDS(eval(as.name(i)) , file = tempPath)
@@ -42,14 +42,13 @@ base64Set = toJSON(base64_enc(binarySet), raw = "hex")
 
 #adding content
 PUT(paste0(dbURL,path,".json"), body = base64Set)
-
 print(paste0(i, " is ready"))
 }
 
 #retrieving datasets from firebase
 pRolocFire <- function(dataset){
-  dbURL <- "https://firedata-b0e54.firebaseio.com"
-  path <- paste0("/pRolocData/", dataset)
+  dbURL <- "https://spatialmap-1b08e.firebaseio.com"
+  path <- paste0("/objects/", dataset)
   #retrieving data
   data = GET(paste0(dbURL,path,".json"))
   retrievedData = content(data,"text")
@@ -57,8 +56,31 @@ pRolocFire <- function(dataset){
   writeBin(base64_dec(fromJSON(retrievedData)), tempPath2)
   x <- readRDS(tempPath2)
   assign(toString(as.name(dataset)), x, envir = .GlobalEnv)
-  return(paste0(dataset, " works"))
+  return(paste0(dataset, " was transfered"))
 }
 
-#testing datasets functionality
+#testing datasets functionality, b is a list of all MSnBase names
 lapply(b, function(x) tryCatch(pRolocFire(x), error = function(e) NULL))
+
+##
+firebaseQuality <- function(dName) {
+  #pRolocData
+  data(list = dName)
+  pRolocDataSet = eval(as.name(dName))
+  tempRoloc = tempfile()
+  saveRDS(pRolocDataSet, tempRoloc)
+  #Firebase Data
+  dbURL <- "https://spatialmap-1b08e.firebaseio.com"
+  path <- paste0("/objects/", dName)
+  data = GET(paste0(dbURL,path,".json"))
+  retrievedData = content(data,"text")
+  tempFire = tempfile()
+  writeBin(base64_dec(fromJSON(retrievedData)), tempFire)
+  
+  #comparing both objects
+  return(identical(toString(tools::md5sum(tempRoloc)), toString(tools::md5sum(tempFire))))
+}
+
+## testing the whole DB, b is a vector of all MSnBase names
+lapply(b, function(x) tryCatch(firebaseQuality(x), error = function(e) NULL))
+
