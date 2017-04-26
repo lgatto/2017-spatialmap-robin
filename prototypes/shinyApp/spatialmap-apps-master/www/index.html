@@ -1,0 +1,157 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>  <script type="application/shiny-singletons"></script>  <script type="application/html-dependencies">json2[2014.02.04];jquery[1.12.4];babel-polyfill[6.7.2];shiny[1.0.0];selectize[0.11.2];ionrangeslider[2.1.2];strftime[0.9.2];htmlwidgets[0.8];datatables-binding[0.2];bootstrap[3.3.7]</script><script src="shared/json2-min.js"></script>
+<script src="shared/jquery.min.js"></script>
+<script src="shared/babel-polyfill.min.js"></script>
+<link href="shared/shiny.css" rel="stylesheet" />
+<script src="shared/shiny.min.js"></script>
+<link href="shared/selectize/css/selectize.bootstrap3.css" rel="stylesheet" />
+<!--[if lt IE 9]>
+<script src="shared/selectize/js/es5-shim.min.js"></script>
+<![endif]-->
+<script src="shared/selectize/js/selectize.min.js"></script>
+<link href="shared/ionrangeslider/css/ion.rangeSlider.css" rel="stylesheet" />
+<link href="shared/ionrangeslider/css/ion.rangeSlider.skinShiny.css" rel="stylesheet" />
+<script src="shared/ionrangeslider/js/ion.rangeSlider.min.js"></script>
+<script src="shared/strftime/strftime-min.js"></script>
+<script src="htmlwidgets-0.8/htmlwidgets.js"></script>
+<script src="datatables-binding-0.2/datatables.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="shared/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+<script src="shared/bootstrap/js/bootstrap.min.js"></script>
+<script src="shared/bootstrap/shim/html5shiv.min.js"></script>
+<script src="shared/bootstrap/shim/respond.min.js"></script>
+
+</head>
+
+<body>
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-sm-2">
+        <form class="well">
+          <div class="form-group shiny-input-container">
+            <label class="control-label" for="markers">Labels</label>
+            <div>
+              <select id="markers" class="form-control" multiple="multiple"><option value="40S Ribosome" selected>40S Ribosome</option>
+<option value="60S Ribosome" selected>60S Ribosome</option>
+<option value="Actin cytoskeleton" selected>Actin cytoskeleton</option>
+<option value="Cytosol" selected>Cytosol</option>
+<option value="Endoplasmic reticulum/Golgi apparatus" selected>Endoplasmic reticulum/Golgi apparatus</option>
+<option value="Endosome" selected>Endosome</option>
+<option value="Extracellular matrix" selected>Extracellular matrix</option>
+<option value="Lysosome" selected>Lysosome</option>
+<option value="Mitochondrion" selected>Mitochondrion</option>
+<option value="Nucleus - Chromatin" selected>Nucleus - Chromatin</option>
+<option value="Nucleus - Non-chromatin" selected>Nucleus - Non-chromatin</option>
+<option value="Peroxisome" selected>Peroxisome</option>
+<option value="Plasma membrane" selected>Plasma membrane</option>
+<option value="Proteasome" selected>Proteasome</option>
+<option value="nanog">nanog</option>
+<option value="nanog interaction partners">nanog interaction partners</option>
+<option value="Oct4">Oct4</option>
+<option value="Sox2">Sox2</option>
+<option value="Sox2 ip">Sox2 ip</option>
+<option value="Oct4 ip">Oct4 ip</option></select>
+              <script type="application/json" data-for="markers">{}</script>
+            </div>
+          </div>
+          <div class="form-group shiny-input-container">
+            <label class="control-label" for="trans">Transparancy</label>
+            <input class="js-range-slider" id="trans" data-min="0" data-max="1" data-from="0.5" data-step="0.01" data-grid="true" data-grid-num="10" data-grid-snap="false" data-keyboard="true" data-keyboard-step="1" data-drag-interval="true" data-data-type="number" data-prettify-separator=","/>
+          </div>
+          <div class="form-group shiny-input-container">
+            <div class="checkbox">
+              <label>
+                <input id="checkbox" type="checkbox" checked="checked"/>
+                <span>Show labels</span>
+              </label>
+            </div>
+          </div>
+          <br/>
+          <button id="resetButton" type="button" class="btn btn-default action-button">Zoom/reset plot</button>
+          <br/>
+          <button id="clear" type="button" class="btn btn-default action-button">Clear selection</button>
+        </form>
+      </div>
+      <div class="col-sm-8">
+        <div class="tabbable">
+          <ul class="nav nav-tabs">
+            <li class="active">
+              <a href="#tab-4440-1" data-toggle="tab" data-value="Description">Description</a>
+            </li>
+            <li>
+              <a href="#tab-4440-2" data-toggle="tab" data-value="PCA">PCA</a>
+            </li>
+            <li>
+              <a href="#tab-4440-3" data-toggle="tab" data-value="Profiles">Profiles</a>
+            </li>
+            <li>
+              <a href="#tab-4440-4" data-toggle="tab"></a>
+            </li>
+          </ul>
+          <div class="tab-content">
+            <div class="tab-pane active" data-value="Description" id="tab-4440-1"><h2>A draft map of the mouse pluripotent stem cell spatial proteome</h2>
+
+<p><strong>Abstract</strong> Knowledge of the subcellular distribution of proteins is
+vital for understanding cellular mechanisms. Capturing the subcellular
+proteome in a single experiment has proven challenging, with studies
+focusing on specific compartments or assigning proteins to subcellular
+niches with low resolution and/or accuracy. Here we introduce
+hyperLOPIT, a method that couples extensive fractionation,
+quantitative high-resolution accurate mass spectrometry with
+multivariate data analysis. We apply hyperLOPIT to a pluripotent stem
+cell population whose subcellular proteome has not been extensively
+studied. We provide localization data on over 5,000 proteins with
+unprecedented spatial resolution to reveal the organization of
+organelles, sub-organellar compartments, protein complexes, functional
+networks and steady-state dynamics of proteins and unexpected
+subcellular locations. The method paves the way for characterizing the
+impact of post-transcriptional and post-translational modification on
+protein location and studies involving proteome-level locational
+changes on cellular perturbation. An interactive open-source resource
+is presented that enables exploration of these data.</p>
+
+<p><strong>Reference</strong> Christoforou, A. et al. A draft map of the mouse
+pluripotent stem cell spatial proteome. Nat. Commun. 7:8992
+<a href="http://dx.doi.org/10.1038/ncomms9992">doi:10.1038/ncomms9992</a> (2016).</p>
+
+<hr/>
+</div>
+            <div class="tab-pane" data-value="PCA" id="tab-4440-2">
+              <div class="row">
+                <div class="col-sm-9">
+                  <div id="pca" class="shiny-plot-output" style="width: 100% ; height: 600px" data-dblclick-id="dblClick" data-dblclick-clip="TRUE" data-brush-id="pcaBrush" data-brush-fill="#9cf" data-brush-stroke="#036" data-brush-opacity="0.25" data-brush-delay="300" data-brush-delay-type="debounce" data-brush-clip="TRUE" data-brush-direction="xy" data-brush-reset-on-new="TRUE"></div>
+                </div>
+                <div class="col-sm-3">
+                  <div id="legend1" class="shiny-plot-output" style="width: 200% ; height: 600px"></div>
+                </div>
+              </div>
+            </div>
+            <div class="tab-pane" data-value="Profiles" id="tab-4440-3">
+              <div class="row">
+                <div class="col-sm-8">
+                  <div id="profile" class="shiny-plot-output" style="width: 120% ; height: 400px"></div>
+                </div>
+                <div class="col-sm-3 col-sm-offset-1">
+                  <div id="legend2" class="shiny-plot-output" style="width: 80% ; height: 400px"></div>
+                </div>
+              </div>
+            </div>
+            <div class="row" id="tab-4440-4">
+              <div class="col-sm-12">
+                <div class="col-sm-12">
+                  <div id="fDataTable" style="width:100%; height:auto; " class="datatables html-widget html-widget-output"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

@@ -5,7 +5,7 @@ library(pRolocdata)
 
 #project settings
 dbURL <- "https://spatialmap-1b08e.firebaseio.com"
-path <- "/objects"
+path <- "/test"
 
 #taking pRolocData MSnSet
 data(E14TG2aS1)
@@ -45,13 +45,23 @@ PUT(paste0(dbURL,path,".json"), body = base64Set)
 print(paste0(i, " is ready"))
 }
 
-#retrieving datasets from firebase
-pRolocFire <- function(dataset){
+#Adding datasets via command line
+pRolocUpload <- function(dataset, name){
+  tempPath = tempfile()
+  saveRDS(eval(as.name(i)) , file = tempPath)
+  binarySet = readBin(tempPath, what = "raw", n = 50000000)
+  base64Set = toJSON(base64_enc(binarySet), raw = "hex")
+  PUT(paste0(dbURL,path,".json"), body = base64Set)
+  print("dataset successfully uploaded")
+}
+
+#Retrieving datasets from firebase
+pRolocLoad <- function(dataset){
   dbURL <- "https://spatialmap-1b08e.firebaseio.com"
   path <- paste0("/objects/", dataset)
   #retrieving data
   data = GET(paste0(dbURL,path,".json"))
-  retrievedData = content(data,"text")
+  retrievedData = httr::content(data,"text")
   tempPath2 = tempfile()
   writeBin(base64_dec(fromJSON(retrievedData)), tempPath2)
   x <- readRDS(tempPath2)
@@ -62,7 +72,7 @@ pRolocFire <- function(dataset){
 #testing datasets functionality, b is a list of all MSnBase names
 lapply(b, function(x) tryCatch(pRolocFire(x), error = function(e) NULL))
 
-##
+## firebaseQuality check - give a string like "hyperLOPID2015"
 firebaseQuality <- function(dName) {
   #pRolocData
   data(list = dName)
@@ -73,7 +83,7 @@ firebaseQuality <- function(dName) {
   dbURL <- "https://spatialmap-1b08e.firebaseio.com"
   path <- paste0("/objects/", dName)
   data = GET(paste0(dbURL,path,".json"))
-  retrievedData = content(data,"text")
+  retrievedData = httr::content(data,"text")
   tempFire = tempfile()
   writeBin(base64_dec(fromJSON(retrievedData)), tempFire)
   
@@ -83,4 +93,10 @@ firebaseQuality <- function(dName) {
 
 ## testing the whole DB, b is a vector of all MSnBase names
 lapply(b, function(x) tryCatch(firebaseQuality(x), error = function(e) NULL))
+
+## store database
+backup = system('curl "https://spatialmap-1b08e.firebaseio.com/.json?auth=xLj9QCFBxbO47WHmg9lae8Riisn1l7WG2LalyIpV"', intern = TRUE)
+
+# test for key naming
+PUT(paste0(dbURL,path,".json"), body = '{"a" : "five" }')
 
