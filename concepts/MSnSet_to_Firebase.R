@@ -5,7 +5,7 @@ library(pRolocdata)
 
 #project settings
 dbURL <- "https://spatialmap-1b08e.firebaseio.com"
-path <- "/test"
+path <- "/data"
 
 #taking pRolocData MSnSet
 data(E14TG2aS1)
@@ -33,22 +33,17 @@ b = a[nchar(a) > 2]
 
 #uploading all pRolocData MSnSets
 for (i in b) {
-path <- paste0("/objects/", i)
-data(list = i)
-tempPath = tempfile()
-saveRDS(eval(as.name(i)) , file = tempPath)
-binarySet = readBin(tempPath, what = "raw", n = 50000000)
-base64Set = toJSON(base64_enc(binarySet), raw = "hex")
+pRolocData = pRolocMetaFrame(eval(as.name(i)))
 
 #adding content
-PUT(paste0(dbURL,path,".json"), body = base64Set)
+POST(paste0(dbURL,path,".json"), body = toJSON(pRolocData, auto_unbox = TRUE))
 print(paste0(i, " is ready"))
 }
 
 #Adding datasets via command line
-pRolocUpload <- function(dataset, name){
+pRolocUpload <- function(dataset){
   tempPath = tempfile()
-  saveRDS(eval(as.name(i)) , file = tempPath)
+  saveRDS(dataset, file = tempPath)
   binarySet = readBin(tempPath, what = "raw", n = 50000000)
   base64Set = toJSON(base64_enc(binarySet), raw = "hex")
   PUT(paste0(dbURL,path,".json"), body = base64Set)
@@ -98,5 +93,60 @@ lapply(b, function(x) tryCatch(firebaseQuality(x), error = function(e) NULL))
 backup = system('curl "https://spatialmap-1b08e.firebaseio.com/.json?auth=xLj9QCFBxbO47WHmg9lae8Riisn1l7WG2LalyIpV"', intern = TRUE)
 
 # test for key naming
-PUT(paste0(dbURL,path,".json"), body = '{"a" : "five" }')
+PUT(paste0(dbURL,path,".json"), body = toJSON(unbox(data.frame("a" = "fives"))))
+
+#extract data from MSnSet object
+pRolocMetaFrame <- function(object){
+  
+  #object
+  tempPath = tempfile()
+  saveRDS(object, file = tempPath)
+  binarySet = readBin(tempPath, what = "raw", n = 50000000)
+  base64Set = base64_enc(binarySet)
+  
+  #meta
+  title =  object@experimentData@title
+  author = object@experimentData@name
+  email = object@experimentData@email
+  contact = object@experimentData@contact
+  dataStamp = object@experimentData@dateStamp
+  abstract = object@experimentData@abstract
+  lab = object@experimentData@lab
+  pubMedIds = object@experimentData@pubMedIds
+  
+  tissue = object@experimentData@samples$tissue
+  cellLine = object@experimentData@samples$cellLine
+  species = object@experimentData@samples$species
+  operator = object@experimentData@samples$operator
+  
+  markerClasses = toString(getMarkerClasses(object))
+  
+  featureNames = toString(featureNames(E14TG2aR))
+  
+  #data.frame creates subfolder in list
+  pRolocRawData = data.frame("base64Set" =  base64Set)
+
+  #List generation
+  pRolocList = list("title" = title,
+                    "author" = author, 
+                    "email" = email, 
+                    "contact" = contact, 
+                    "dataStamp" = dataStamp, 
+                    "abstract" = abstract, 
+                    "lab" = lab, 
+                    "pubMedIds" = pubMedIds,
+                    
+                    "tissue" = tissue,
+                    "cellLine" = cellLine,
+                    "species" = species,
+                    "operator" = operator,
+                    
+                    "featureNames" = featureNames,
+                    "rawData" = unbox(pRolocRawData))
+                    "markerClasses" = markerClasses
+  return(pRolocList)
+}
+
+PUT(paste0(dbURL,path,".json"), body = toJSON((pRolocList)))
+PUT(paste0(dbURL,path,".json"), body = toJSON(pRolocList, auto_unbox = TRUE))
 
