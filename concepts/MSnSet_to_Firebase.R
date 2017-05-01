@@ -33,7 +33,7 @@ b = a[nchar(a) > 2]
 
 #uploading all pRolocData MSnSets
 for (i in b) {
-pRolocData = pRolocMetaFrame(eval(as.name(i)))
+pRolocData = pRolocMetaFrame(eval(as.name(i)), i)
 
 #adding content
 POST(paste0(dbURL,path,".json"), body = toJSON(pRolocData, auto_unbox = TRUE))
@@ -96,15 +96,16 @@ backup = system('curl "https://spatialmap-1b08e.firebaseio.com/.json?auth=xLj9QC
 PUT(paste0(dbURL,path,".json"), body = toJSON(unbox(data.frame("a" = "fives"))))
 
 #extract data from MSnSet object
-pRolocMetaFrame <- function(object){
+pRolocMetaFrame <- function(object, varName){
   
   #object
   tempPath = tempfile()
   saveRDS(object, file = tempPath)
   binarySet = readBin(tempPath, what = "raw", n = 50000000)
-  base64Set = base64_enc(binarySet)
+  base64Set = jsonlite::base64_enc(binarySet)
   
   #meta
+  #varName = varName
   title =  object@experimentData@title
   author = object@experimentData@name
   email = object@experimentData@email
@@ -119,15 +120,16 @@ pRolocMetaFrame <- function(object){
   species = object@experimentData@samples$species
   operator = object@experimentData@samples$operator
   
-  markerClasses = toString(getMarkerClasses(object))
+  markerClasses = toString(pRoloc::getMarkerClasses(object))
   
-  featureNames = toString(featureNames(E14TG2aR))
+  featureNames = toString(featureNames(object))
   
   #data.frame creates subfolder in list
   pRolocRawData = data.frame("base64Set" =  base64Set)
 
   #List generation
-  pRolocList = list("title" = title,
+  pRolocList = list("varName" = varName, 
+                    "title" = title,
                     "author" = author, 
                     "email" = email, 
                     "contact" = contact, 
@@ -140,13 +142,12 @@ pRolocMetaFrame <- function(object){
                     "cellLine" = cellLine,
                     "species" = species,
                     "operator" = operator,
-                    
+                    "markerClasses" = markerClasses,
                     "featureNames" = featureNames,
                     "rawData" = unbox(pRolocRawData))
-                    "markerClasses" = markerClasses
+                    
   return(pRolocList)
 }
 
-PUT(paste0(dbURL,path,".json"), body = toJSON((pRolocList)))
-PUT(paste0(dbURL,path,".json"), body = toJSON(pRolocList, auto_unbox = TRUE))
+
 
