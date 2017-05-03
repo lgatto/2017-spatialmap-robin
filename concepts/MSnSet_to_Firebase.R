@@ -15,7 +15,7 @@ binarySet = readBin(tempPath, what = "raw", n = 5000000)
 base64Set = toJSON(base64_enc(binarySet),raw = "hex")
 
 #adding content
-PUT(paste0(dbURL,path,".json"), body = base64Set)
+POST(paste0(dbURL,path,".json"), body = base64Set)
 
 #retrieving data
 data = GET(paste0(dbURL,path,".json"))
@@ -89,6 +89,14 @@ firebaseQuality <- function(dName) {
 ## testing the whole DB, b is a vector of all MSnBase names
 lapply(b, function(x) tryCatch(firebaseQuality(x), error = function(e) NULL))
 
+#testing plot2D for all datasets
+plotTest <- function(dName){  
+  data = plot2D(eval(as.name(dName)), plot=FALSE)
+  return("works")
+}
+
+lapply(b, function(x) tryCatch(plotTest(x), error = function(e) print(e)))
+
 ## store database
 backup = system('curl "https://spatialmap-1b08e.firebaseio.com/.json?auth=xLj9QCFBxbO47WHmg9lae8Riisn1l7WG2LalyIpV"', intern = TRUE)
 
@@ -121,8 +129,14 @@ pRolocMetaFrame <- function(object, varName){
   operator = object@experimentData@samples$operator
   
   markerClasses = toString(pRoloc::getMarkerClasses(object))
-  
   featureNames = toString(featureNames(object))
+  
+  #pca data - we can probably add a colNames function to plot2D to delete this step
+  pcaData = as.data.frame(plot2D(object, plot = FALSE))
+  colnames(pcaData) = c("PCA1","PCA2")
+
+  #binding pca data and functional data
+  #fSet = as.data.frame(cbind(fData(object), pcaData))
   
   #data.frame creates subfolder in list
   pRolocRawData = data.frame("base64Set" =  base64Set)
@@ -137,13 +151,14 @@ pRolocMetaFrame <- function(object, varName){
                     "abstract" = abstract, 
                     "lab" = lab, 
                     "pubMedIds" = pubMedIds,
-                    
                     "tissue" = tissue,
                     "cellLine" = cellLine,
                     "species" = species,
                     "operator" = operator,
                     "markerClasses" = markerClasses,
                     "featureNames" = featureNames,
+                    #"fSet" = fSet,
+                    "pcaData" = pcaData,
                     "rawData" = unbox(pRolocRawData))
                     
   return(pRolocList)
