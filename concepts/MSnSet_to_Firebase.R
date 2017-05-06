@@ -7,6 +7,9 @@ library(pRolocdata)
 dbURL <- "https://spatialmap-1b08e.firebaseio.com"
 path <- "/data"
 
+#delete DB
+POST(paste0(dbURL,path,".json"), body = toJSON("test"))
+
 #taking pRolocData MSnSet
 data(E14TG2aS1)
 tempPath = tempfile()
@@ -95,7 +98,7 @@ plotTest <- function(dName){
   return("works")
 }
 
-lapply(b, function(x) tryCatch(plotTest(x), error = function(e) print(e)))
+lapply(b, function(x) tryCatch(plotTest(x), warning = function(w) return(w), error = function(e) return(e)))
 
 ## store database
 backup = system('curl "https://spatialmap-1b08e.firebaseio.com/.json?auth=xLj9QCFBxbO47WHmg9lae8Riisn1l7WG2LalyIpV"', intern = TRUE)
@@ -103,6 +106,20 @@ backup = system('curl "https://spatialmap-1b08e.firebaseio.com/.json?auth=xLj9QC
 # test for key naming
 PUT(paste0(dbURL,path,".json"), body = toJSON(unbox(data.frame("a" = "fives"))))
 
+createColors <- function(object){
+  markers = fData(object)$markers
+  uniqueMarkers = unique(markers)
+  markerVec = c()
+  for(i in 1:length(uniqueMarkers)){
+    markerColor = ifelse(uniqueMarkers[i] == "unknown", getStockcol(), getStockcol()[i])
+    markerVec = c(markerVec, markerColor)
+  }
+  colorTable = data.frame(uniqueMarkers, markerVec, stringsAsFactors = FALSE)
+
+  colorAssigment=unlist(sapply(markers, function(x) colorTable$markerVec[which(colorTable$uniqueMarkers == x)]))
+  return(colorAssigment)
+}
+  
 #extract data from MSnSet object
 pRolocMetaFrame <- function(object, varName){
   
@@ -132,11 +149,13 @@ pRolocMetaFrame <- function(object, varName){
   featureNames = toString(featureNames(object))
   
   #pca data - we can probably add a colNames function to plot2D to delete this step
+  print(varName)
   pcaData = as.data.frame(plot2D(object, plot = FALSE))
-  colnames(pcaData) = c("PCA1","PCA2")
-
+  
+  fSet = data.frame("PCA1" = pcaData[[1]], "PCA2" = pcaData[[2]], "Markers" = as.vector(fData(object)$markers), "Colors" = createColors(object))
+  print(paste0(varName, "complete"))
   #binding pca data and functional data
-  #fSet = as.data.frame(cbind(fData(object), pcaData))
+  #fSet = as.data.frame(cbind(as.data.frame(fData(object)$markers), pcaData))
   
   #data.frame creates subfolder in list
   pRolocRawData = data.frame("base64Set" =  base64Set)
@@ -157,8 +176,8 @@ pRolocMetaFrame <- function(object, varName){
                     "operator" = operator,
                     "markerClasses" = markerClasses,
                     "featureNames" = featureNames,
-                    #"fSet" = fSet,
-                    "pcaData" = pcaData,
+                    "fSet" = fSet,
+                    #"pcaData" = pcaData,
                     "rawData" = unbox(pRolocRawData))
                     
   return(pRolocList)
