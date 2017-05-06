@@ -1,6 +1,7 @@
 #load packages
 library(httr)
 library(jsonlite)
+library(pRoloc)
 library(pRolocdata)
 
 #project settings
@@ -9,7 +10,7 @@ path <- "/data"
 
 ###### manual commands for testing purposes 
 #delete DB
-POST(paste0(dbURL,path,".json"), body = toJSON(mtcars))
+#PUT(paste0(dbURL,path,".json"), body = toJSON(mtcars))
 
 #taking pRolocData MSnSet
 data(E14TG2aS1)
@@ -38,7 +39,7 @@ b = a[nchar(a) > 2]
 
 #uploading all pRolocData MSnSets
 for (i in b) {
-pRolocData = pRolocUpload(eval(as.name(i)), i)
+pRolocData = pRolocUpload(dataset = i,name = i)
 }
 
 #Adding datasets via command line
@@ -47,11 +48,11 @@ pRolocUpload <- function(dataset, name){
   pRolocMeta = pRolocMetaFrame(eval(as.name(dataset)), name)
   Response = POST(paste0(dbURL,"/meta",".json"), body = toJSON(pRolocMeta, auto_unbox = TRUE))
   #pRolocRawData
-  pRolocRaw = pRolocMetaFrame(eval(as.name(dataset)))
+  pRolocRaw = pRolocRawData(eval(as.name(dataset)))
   PUT(paste0(dbURL,"/raw/",content(Response),".json"), body = toJSON(pRolocRaw, auto_unbox = TRUE))
   #pRolocData
-  pRolocData = pRolocData(eval(as.name(dataset)))
-  PUT(paste0(dbURL,"/data/",content(Response),".json"), body = toJSON(pRolocData, auto_unbox = TRUE))
+  pRolocDataVar = pRolocFData(eval(as.name(dataset)))
+  PUT(paste0(dbURL,"/data/",content(Response),".json"), body = toJSON(pRolocDataVar, auto_unbox = TRUE))
   #success message
   print(paste0(name, "got transfered to firebase."))
 }
@@ -135,13 +136,11 @@ pRolocRawData <-function(object){
   return(pRolocList)
 }
 
-pRolocData <- function(object){
+pRolocFData <- function(object){
   #pca data - we can probably add a colNames function to plot2D to delete this step
-  print(varName)
   pcaData = as.data.frame(plot2D(object, plot = FALSE))
   
   fSet = data.frame("PCA1" = pcaData[[1]], "PCA2" = pcaData[[2]], "Markers" = as.vector(fData(object)$markers), "Colors" = createColors(object))
-  print(paste0(varName, "complete"))
   #binding pca data and functional data
   #fSet = as.data.frame(cbind(as.data.frame(fData(object)$markers), pcaData))
   pRolocList = list("fSet" = fSet)
@@ -150,7 +149,7 @@ pRolocData <- function(object){
 
 pRolocMetaFrame <- function(object, varName){
   #meta
-  #varName = varName
+  varName = "varName"
   title =  object@experimentData@title
   author = object@experimentData@name
   email = object@experimentData@email
