@@ -7,8 +7,9 @@ library(pRolocdata)
 dbURL <- "https://spatialmap-1b08e.firebaseio.com"
 path <- "/data"
 
+###### manual commands for testing purposes 
 #delete DB
-POST(paste0(dbURL,path,".json"), body = toJSON("test"))
+POST(paste0(dbURL,path,".json"), body = toJSON(mtcars))
 
 #taking pRolocData MSnSet
 data(E14TG2aS1)
@@ -27,30 +28,32 @@ tempPath2 = tempfile()
 writeBin(base64_dec(fromJSON(retrievedData)), tempPath2)
 readRDS(tempPath2)
 
-# uploading all pRolocDatasets
+#pRolocdata list to vector
 for (i in 1:length(a)){
   a[i] = head(strsplit(a[i], split = " ")[[1]],1)
 }
 
 b = a[nchar(a) > 2]
+###### end of manual commands 
 
 #uploading all pRolocData MSnSets
 for (i in b) {
-pRolocData = pRolocMetaFrame(eval(as.name(i)), i)
-
-#adding content
-POST(paste0(dbURL,path,".json"), body = toJSON(pRolocData, auto_unbox = TRUE))
-print(paste0(i, " is ready"))
+pRolocData = pRolocUpload(eval(as.name(i)), i)
 }
 
 #Adding datasets via command line
-pRolocUpload <- function(dataset){
-  tempPath = tempfile()
-  saveRDS(dataset, file = tempPath)
-  binarySet = readBin(tempPath, what = "raw", n = 50000000)
-  base64Set = toJSON(base64_enc(binarySet), raw = "hex")
-  PUT(paste0(dbURL,path,".json"), body = base64Set)
-  print("dataset successfully uploaded")
+pRolocUpload <- function(dataset, name){
+  #pRolocMetaData
+  pRolocMeta = pRolocMetaFrame(eval(as.name(dataset)), name)
+  Response = POST(paste0(dbURL,"/meta",".json"), body = toJSON(pRolocMeta, auto_unbox = TRUE))
+  #pRolocRawData
+  pRolocRaw = pRolocMetaFrame(eval(as.name(dataset)))
+  PUT(paste0(dbURL,"/raw/",content(Response),".json"), body = toJSON(pRolocRaw, auto_unbox = TRUE))
+  #pRolocData
+  pRolocData = pRolocData(eval(as.name(dataset)))
+  PUT(paste0(dbURL,"/data/",content(Response),".json"), body = toJSON(pRolocData, auto_unbox = TRUE))
+  #success message
+  print(paste0(name, "got transfered to firebase."))
 }
 
 #Retrieving datasets from firebase
@@ -121,14 +124,31 @@ createColors <- function(object){
 }
   
 #extract data from MSnSet object
-pRolocMetaFrame <- function(object, varName){
-  
-  #object
+pRolocRawData <-function(object){
+  #convert object to base64
   tempPath = tempfile()
   saveRDS(object, file = tempPath)
   binarySet = readBin(tempPath, what = "raw", n = 50000000)
   base64Set = jsonlite::base64_enc(binarySet)
+  #adding key by assigning to data.frame
+  pRolocList = list("base64Set" =  base64Set)
+  return(pRolocList)
+}
+
+pRolocData <- function(object){
+  #pca data - we can probably add a colNames function to plot2D to delete this step
+  print(varName)
+  pcaData = as.data.frame(plot2D(object, plot = FALSE))
   
+  fSet = data.frame("PCA1" = pcaData[[1]], "PCA2" = pcaData[[2]], "Markers" = as.vector(fData(object)$markers), "Colors" = createColors(object))
+  print(paste0(varName, "complete"))
+  #binding pca data and functional data
+  #fSet = as.data.frame(cbind(as.data.frame(fData(object)$markers), pcaData))
+  pRolocList = list("fSet" = fSet)
+  return(pRolocList)
+}
+
+pRolocMetaFrame <- function(object, varName){
   #meta
   #varName = varName
   title =  object@experimentData@title
@@ -148,18 +168,6 @@ pRolocMetaFrame <- function(object, varName){
   markerClasses = toString(pRoloc::getMarkerClasses(object))
   featureNames = toString(featureNames(object))
   
-  #pca data - we can probably add a colNames function to plot2D to delete this step
-  print(varName)
-  pcaData = as.data.frame(plot2D(object, plot = FALSE))
-  
-  fSet = data.frame("PCA1" = pcaData[[1]], "PCA2" = pcaData[[2]], "Markers" = as.vector(fData(object)$markers), "Colors" = createColors(object))
-  print(paste0(varName, "complete"))
-  #binding pca data and functional data
-  #fSet = as.data.frame(cbind(as.data.frame(fData(object)$markers), pcaData))
-  
-  #data.frame creates subfolder in list
-  pRolocRawData = data.frame("base64Set" =  base64Set)
-
   #List generation
   pRolocList = list("varName" = varName, 
                     "title" = title,
@@ -175,11 +183,9 @@ pRolocMetaFrame <- function(object, varName){
                     "species" = species,
                     "operator" = operator,
                     "markerClasses" = markerClasses,
-                    "featureNames" = featureNames,
-                    "fSet" = fSet,
-                    #"pcaData" = pcaData,
-                    "rawData" = unbox(pRolocRawData))
-                    
+                    "featureNames" = featureNames
+  )
+
   return(pRolocList)
 }
 
