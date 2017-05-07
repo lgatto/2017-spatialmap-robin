@@ -39,13 +39,13 @@ b = a[nchar(a) > 2]
 
 #uploading all pRolocData MSnSets
 for (i in b) {
-pRolocData = pRolocUpload(dataset = i,name = i)
+  pRolocData = pRolocUpload(dataset = i,name = i)
 }
 
 #Adding datasets via command line
 pRolocUpload <- function(dataset, name){
   #pRolocMetaData
-  pRolocMeta = pRolocMetaFrame(eval(as.name(dataset)), name)
+  pRolocMeta = pRolocMetaFrame(eval(as.name(dataset)), varName = name)
   Response = POST(paste0(dbURL,"/meta",".json"), body = toJSON(pRolocMeta, auto_unbox = TRUE))
   #pRolocRawData
   pRolocRaw = pRolocRawData(eval(as.name(dataset)))
@@ -54,7 +54,7 @@ pRolocUpload <- function(dataset, name){
   pRolocDataVar = pRolocFData(eval(as.name(dataset)))
   PUT(paste0(dbURL,"/data/",content(Response),".json"), body = toJSON(pRolocDataVar, auto_unbox = TRUE))
   #success message
-  print(paste0(name, "got transfered to firebase."))
+  print(paste0(name, " got transfered to firebase."))
 }
 
 #Retrieving datasets from firebase
@@ -149,7 +149,7 @@ pRolocFData <- function(object){
 
 pRolocMetaFrame <- function(object, varName){
   #meta
-  varName = "varName"
+  #varName = "varName"
   title =  object@experimentData@title
   author = object@experimentData@name
   email = object@experimentData@email
