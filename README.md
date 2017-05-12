@@ -1,4 +1,4 @@
-# 2017-spatialmap-robin
+# The SpatialMap Project
 Robin's 'Spatial Proteomics Data Dissemination' project
 
 ---
