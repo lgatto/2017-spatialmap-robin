@@ -6,35 +6,39 @@ library(pRolocdata)
 
 #project settings
 dbURL <- "https://spatialmap-1b08e.firebaseio.com"
-path <- "/data"
+path <- "/objects"
 
 ###### manual commands for testing purposes 
 #delete DB
 #PUT(paste0(dbURL,path,".json"), body = toJSON(mtcars))
 
+#cleaned dataset list
+# b = as.data.frame(read.csv(file.choose()))
+# b = as.vector(b[[2]])
+
 #taking pRolocData MSnSet
-data(E14TG2aS1)
-tempPath = tempfile()
-saveRDS(E14TG2aS1, tempPath)
-binarySet = readBin(tempPath, what = "raw", n = 5000000)
-base64Set = toJSON(base64_enc(binarySet),raw = "hex")
-
-#adding content
-POST(paste0(dbURL,path,".json"), body = base64Set)
-
-#retrieving data
-data = GET(paste0(dbURL,path,".json"))
-retrievedData = content(data,"text")
-tempPath2 = tempfile()
-writeBin(base64_dec(fromJSON(retrievedData)), tempPath2)
-readRDS(tempPath2)
+# data(E14TG2aS1)
+# tempPath = tempfile()
+# saveRDS(E14TG2aS1, tempPath)
+# binarySet = readBin(tempPath, what = "raw", n = 5000000)
+# base64Set = toJSON(base64_enc(binarySet),raw = "hex")
+# 
+# #adding content
+# POST(paste0(dbURL,path,".json"), body = base64Set)
+# 
+# #retrieving data
+# data = GET(paste0(dbURL,path,".json"))
+# retrievedData = content(data,"text")
+# tempPath2 = tempfile()
+# writeBin(base64_dec(fromJSON(retrievedData)), tempPath2)
+# readRDS(tempPath2)
 
 #pRolocdata list to vector
-for (i in 1:length(a)){
-  a[i] = head(strsplit(a[i], split = " ")[[1]],1)
-}
-
-b = a[nchar(a) > 2]
+# for (i in 1:length(a)){
+#   a[i] = head(strsplit(a[i], split = " ")[[1]],1)
+# }
+# 
+# b = a[nchar(a) > 2]
 ###### end of manual commands 
 
 #uploading all pRolocData MSnSets
@@ -72,43 +76,43 @@ pRolocLoad <- function(dataset){
 }
 
 #testing datasets functionality, b is a list of all MSnBase names
-lapply(b, function(x) tryCatch(pRolocFire(x), error = function(e) NULL))
+# lapply(b, function(x) tryCatch(pRolocFire(x), error = function(e) NULL))
 
 ## firebaseQuality check - give a string like "hyperLOPID2015"
-firebaseQuality <- function(dName) {
-  #pRolocData
-  data(list = dName)
-  pRolocDataSet = eval(as.name(dName))
-  tempRoloc = tempfile()
-  saveRDS(pRolocDataSet, tempRoloc)
-  #Firebase Data
-  dbURL <- "https://spatialmap-1b08e.firebaseio.com"
-  path <- paste0("/objects/", dName)
-  data = GET(paste0(dbURL,path,".json"))
-  retrievedData = httr::content(data,"text")
-  tempFire = tempfile()
-  writeBin(base64_dec(fromJSON(retrievedData)), tempFire)
-  
-  #comparing both objects
-  return(identical(toString(tools::md5sum(tempRoloc)), toString(tools::md5sum(tempFire))))
-}
+# firebaseQuality <- function(dName) {
+#   #pRolocData
+#   data(list = dName)
+#   pRolocDataSet = eval(as.name(dName))
+#   tempRoloc = tempfile()
+#   saveRDS(pRolocDataSet, tempRoloc)
+#   #Firebase Data
+#   dbURL <- "https://spatialmap-1b08e.firebaseio.com"
+#   path <- paste0("/objects/", dName)
+#   data = GET(paste0(dbURL,path,".json"))
+#   retrievedData = httr::content(data,"text")
+#   tempFire = tempfile()
+#   writeBin(base64_dec(fromJSON(retrievedData)), tempFire)
+#   
+#   #comparing both objects
+#   return(identical(toString(tools::md5sum(tempRoloc)), toString(tools::md5sum(tempFire))))
+# }
 
 ## testing the whole DB, b is a vector of all MSnBase names
-lapply(b, function(x) tryCatch(firebaseQuality(x), error = function(e) NULL))
+#lapply(b, function(x) tryCatch(firebaseQuality(x), error = function(e) NULL))
 
 #testing plot2D for all datasets
-plotTest <- function(dName){  
-  data = plot2D(eval(as.name(dName)), plot=FALSE)
-  return("works")
-}
+#plotTest <- function(dName){  
+#  data = plot2D(eval(as.name(dName)), plot=FALSE)
+#  return("works")
+#}
 
-lapply(b, function(x) tryCatch(plotTest(x), warning = function(w) return(w), error = function(e) return(e)))
+# lapply(b, function(x) tryCatch(plotTest(x), warning = function(w) return(w), error = function(e) return(e)))
 
 ## store database
-backup = system('curl "https://spatialmap-1b08e.firebaseio.com/.json?auth=xLj9QCFBxbO47WHmg9lae8Riisn1l7WG2LalyIpV"', intern = TRUE)
+# backup = system('curl "https://spatialmap-1b08e.firebaseio.com/.json?auth=xLj9QCFBxbO47WHmg9lae8Riisn1l7WG2LalyIpV"', intern = TRUE)
 
 # test for key naming
-PUT(paste0(dbURL,path,".json"), body = toJSON(unbox(data.frame("a" = "fives"))))
+# PUT(paste0(dbURL,path,".json"), body = toJSON(unbox(data.frame("a" = "fives"))))
 
 createColors <- function(object){
   markers = fData(object)$markers
@@ -140,7 +144,30 @@ pRolocFData <- function(object){
   #pca data - we can probably add a colNames function to plot2D to delete this step
   pcaData = as.data.frame(plot2D(object, plot = FALSE))
   
-  fSet = data.frame("PCA1" = pcaData[[1]], "PCA2" = pcaData[[2]], "Markers" = as.vector(fData(object)$markers), "Colors" = createColors(object))
+  fScatter = data.frame("PCA1" = pcaData[[1]], "PCA2" = pcaData[[2]], "Colors" = createColors(object))
+  fSetData = fData(object)
+  
+  for (i in 1:length((fSetData))){
+    if (i == 1){
+      p = data.frame(fSetData[[i]])
+    } else {
+      p = data.frame(p, fSetData[[i]])
+    }
+  }
+  
+  #filtering forbidden keys
+  originalNames = names(fSetData)
+  originalNames = gsub("\\$","-", originalNames)
+  originalNames = gsub("\\#","-", originalNames)
+  originalNames = gsub("\\]","-", originalNames)
+  originalNames = gsub("\\[","-", originalNames)
+  originalNames = gsub("\\/","-", originalNames)
+  originalNames = gsub("\\.","-", originalNames)
+  names(p) = originalNames
+  
+  fSet = cbind(fScatter,p)
+  
+  #fSet = cbind(fScatter, fSetData)
   #binding pca data and functional data
   #fSet = as.data.frame(cbind(as.data.frame(fData(object)$markers), pcaData))
   pRolocList = list("fSet" = fSet)
@@ -187,6 +214,5 @@ pRolocMetaFrame <- function(object, varName){
 
   return(pRolocList)
 }
-
 
 
