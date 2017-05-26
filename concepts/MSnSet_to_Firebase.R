@@ -6,11 +6,16 @@ library(pRolocdata)
 
 #project settings
 dbURL <- "https://spatialmap-1b08e.firebaseio.com"
-path <- "/objects"
 
 ###### manual commands for testing purposes 
 #delete DB
-#PUT(paste0(dbURL,path,".json"), body = toJSON(mtcars))
+path = "/raw"
+path2 = "/meta"
+path3 = "/data"
+
+PUT(paste0(dbURL,path,".json"), body = toJSON(mtcars))
+PUT(paste0(dbURL,path2,".json"), body = toJSON(mtcars))
+PUT(paste0(dbURL,path3,".json"), body = toJSON(mtcars))
 
 #cleaned dataset list
 # b = as.data.frame(read.csv(file.choose()))
@@ -57,23 +62,25 @@ pRolocUpload <- function(dataset, name){
   #pRolocData
   pRolocDataVar = pRolocFData(eval(as.name(dataset)))
   PUT(paste0(dbURL,"/data/",content(Response),".json"), body = toJSON(pRolocDataVar, auto_unbox = TRUE))
+  #generateKeys
+  keyCollection(eval(as.name(dataset)), content(Response))
   #success message
   print(paste0(name, " got transfered to firebase."))
 }
 
 #Retrieving datasets from firebase
-pRolocLoad <- function(dataset){
-  dbURL <- "https://spatialmap-1b08e.firebaseio.com"
-  path <- paste0("/objects/", dataset)
-  #retrieving data
-  data = GET(paste0(dbURL,path,".json"))
-  retrievedData = httr::content(data,"text")
-  tempPath2 = tempfile()
-  writeBin(base64_dec(fromJSON(retrievedData)), tempPath2)
-  x <- readRDS(tempPath2)
-  assign(toString(as.name(dataset)), x, envir = .GlobalEnv)
-  return(paste0(dataset, " was transfered"))
-}
+# pRolocLoad <- function(dataset){
+#   dbURL <- "https://spatialmap-1b08e.firebaseio.com"
+#   path <- paste0("/objects/", dataset)
+#   #retrieving data
+#   data = GET(paste0(dbURL,path,".json"))
+#   retrievedData = httr::content(data,"text")
+#   tempPath2 = tempfile()
+#   writeBin(base64_dec(fromJSON(retrievedData)), tempPath2)
+#   x <- readRDS(tempPath2)
+#   assign(toString(as.name(dataset)), x, envir = .GlobalEnv)
+#   return(paste0(dataset, " was transfered"))
+# }
 
 #testing datasets functionality, b is a list of all MSnBase names
 # lapply(b, function(x) tryCatch(pRolocFire(x), error = function(e) NULL))
@@ -141,10 +148,11 @@ pRolocRawData <-function(object){
 }
 
 pRolocFData <- function(object){
-  #pca data - we can probably add a colNames function to plot2D to delete this step
   pcaData = as.data.frame(plot2D(object, plot = FALSE))
   
-  fScatter = data.frame("PCA1" = pcaData[[1]], "PCA2" = pcaData[[2]], "Colors" = createColors(object))
+  fScatter = data.frame("PCA1" = pcaData[[1]], 
+                        "PCA2" = pcaData[[2]], 
+                        "Colors" = createColors(object))
   fSetData = fData(object)
   
   for (i in 1:length((fSetData))){
@@ -154,6 +162,7 @@ pRolocFData <- function(object){
       p = data.frame(p, fSetData[[i]])
     }
   }
+  
   
   #filtering forbidden keys
   originalNames = names(fSetData)
@@ -165,12 +174,23 @@ pRolocFData <- function(object){
   originalNames = gsub("\\.","-", originalNames)
   names(p) = originalNames
   
+  p = cbind(p, data.frame("id" = row.names(fSetData)))
   fSet = cbind(fScatter,p)
   
-  #fSet = cbind(fScatter, fSetData)
-  #binding pca data and functional data
-  #fSet = as.data.frame(cbind(as.data.frame(fData(object)$markers), pcaData))
-  pRolocList = list("fSet" = fSet)
+  exprsSet = exprs(object)
+  exprsSet = cbind(exprsSet, data.frame("id" = row.names(exprsSet)))
+  row.names(exprsSet) = NULL
+  
+  originalNames2 = names(exprsSet)
+  originalNames2 = gsub("\\$","-", originalNames2)
+  originalNames2 = gsub("\\#","-", originalNames2)
+  originalNames2 = gsub("\\]","-", originalNames2)
+  originalNames2 = gsub("\\[","-", originalNames2)
+  originalNames2 = gsub("\\/","-", originalNames2)
+  originalNames2 = gsub("\\.","-", originalNames2)
+  names(exprsSet) = originalNames2
+  
+  pRolocList = list("fSet" = fSet, "exprsSet" = exprsSet)
   return(pRolocList)
 }
 
@@ -213,6 +233,15 @@ pRolocMetaFrame <- function(object, varName){
   )
 
   return(pRolocList)
+}
+
+keyCollection <- function(dataset, rndKey){
+  a = fData(dataset)
+  b = row.names(a)
+  c = list("key" = rndKey)
+  for(i in 1:length(b)){
+    POST(paste0(dbURL,"/keys/",b[i],".json"), body = toJSON(c, auto_unbox = TRUE))
+  }
 }
 
 
