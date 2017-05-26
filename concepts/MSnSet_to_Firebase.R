@@ -236,11 +236,11 @@ pRolocMetaFrame <- function(object, varName){
 }
 
 keyCollection <- function(dataset, rndKey){
-  a = fData(dataset)
-  b = row.names(a)
-  c = list("key" = rndKey)
-  for(i in 1:length(b)){
-    POST(paste0(dbURL,"/keys/",b[i],".json"), body = toJSON(c, auto_unbox = TRUE))
+  fSet = fData(dataset)
+  idNames = row.names(fSet)
+  keyPair = list("key" = rndKey)
+  for (i in 1:length(b)) {
+    POST(paste0(dbURL,"/keys/",idNames[i],".json"), body = toJSON(keyPair, auto_unbox = TRUE))
   }
 }
 
