@@ -12,10 +12,12 @@ dbURL <- "https://spatialmap-1b08e.firebaseio.com"
 path = "/raw"
 path2 = "/meta"
 path3 = "/data"
+path4 = "/keys"
 
 PUT(paste0(dbURL,path,".json"), body = toJSON(mtcars))
 PUT(paste0(dbURL,path2,".json"), body = toJSON(mtcars))
 PUT(paste0(dbURL,path3,".json"), body = toJSON(mtcars))
+PUT(paste0(dbURL,path4,".json"), body = toJSON(mtcars))
 
 #cleaned dataset list
 # b = as.data.frame(read.csv(file.choose()))
@@ -48,6 +50,7 @@ PUT(paste0(dbURL,path3,".json"), body = toJSON(mtcars))
 
 #uploading all pRolocData MSnSets
 for (i in b) {
+  data(list = i)
   pRolocData = pRolocUpload(dataset = i,name = i)
 }
 
@@ -63,7 +66,7 @@ pRolocUpload <- function(dataset, name){
   pRolocDataVar = pRolocFData(eval(as.name(dataset)))
   PUT(paste0(dbURL,"/data/",content(Response),".json"), body = toJSON(pRolocDataVar, auto_unbox = TRUE))
   #generateKeys
-  keyCollection(eval(as.name(dataset)), content(Response))
+  #keyCollection(eval(as.name(dataset)), content(Response))
   #success message
   print(paste0(name, " got transfered to firebase."))
 }
@@ -163,7 +166,6 @@ pRolocFData <- function(object){
     }
   }
   
-  
   #filtering forbidden keys
   originalNames = names(fSetData)
   originalNames = gsub("\\$","-", originalNames)
@@ -174,8 +176,7 @@ pRolocFData <- function(object){
   originalNames = gsub("\\.","-", originalNames)
   names(p) = originalNames
   
-  p = cbind(p, data.frame("id" = row.names(fSetData)))
-  fSet = cbind(fScatter,p)
+  #p = cbind(p, data.frame("id" = row.names(fSetData)))
   
   exprsSet = exprs(object)
   exprsSet = cbind(exprsSet, data.frame("id" = row.names(exprsSet)))
@@ -189,6 +190,8 @@ pRolocFData <- function(object){
   originalNames2 = gsub("\\/","-", originalNames2)
   originalNames2 = gsub("\\.","-", originalNames2)
   names(exprsSet) = originalNames2
+  
+  fSet = cbind(fScatter,p,exprsSet)
   
   pRolocList = list("fSet" = fSet, "exprsSet" = exprsSet)
   return(pRolocList)
@@ -214,6 +217,8 @@ pRolocMetaFrame <- function(object, varName){
   markerClasses = toString(pRoloc::getMarkerClasses(object))
   featureNames = toString(featureNames(object))
   
+  profileColumns = colnames(exprs(object))
+  
   #List generation
   pRolocList = list("varName" = varName, 
                     "title" = title,
@@ -229,7 +234,8 @@ pRolocMetaFrame <- function(object, varName){
                     "species" = species,
                     "operator" = operator,
                     "markerClasses" = markerClasses,
-                    "featureNames" = featureNames
+                    "featureNames" = featureNames,
+                    "profileColumns" = profileColumns
   )
 
   return(pRolocList)
@@ -239,9 +245,7 @@ keyCollection <- function(dataset, rndKey){
   fSet = fData(dataset)
   idNames = row.names(fSet)
   keyPair = list("key" = rndKey)
-  for (i in 1:length(b)) {
+  for (i in 1:length(idNames)) {
     POST(paste0(dbURL,"/keys/",idNames[i],".json"), body = toJSON(keyPair, auto_unbox = TRUE))
   }
 }
-
-
