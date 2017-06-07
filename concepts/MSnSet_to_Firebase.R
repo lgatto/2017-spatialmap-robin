@@ -193,7 +193,7 @@ pRolocFData <- function(object){
   
   fSet = cbind(fScatter,p,exprsSet)
   
-  pRolocList = list("fSet" = fSet, "exprsSet" = exprsSet)
+  pRolocList = list("fSet" = fSet)
   return(pRolocList)
 }
 
